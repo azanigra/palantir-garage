@@ -1,0 +1,12 @@
+[
+  {"num":"24265","fecha":"2016-01-01","tipo":"presupuesto","titulo":"Presupuesto general de gastos y recursos 2016","monto":4219801121,"expediente":"HCD 502/16","municipio":"La Matanza"},
+  {"num":"24270","fecha":"2024-12-01","tipo":"presupuesto","titulo":"Presupuesto general 2025","monto":298500000000,"expediente":"HCD 2024/12","municipio":"La Matanza"},
+  {"num":"24271","fecha":"2024-12-01","tipo":"tributario","titulo":"Ordenanza fiscal 2025","monto":null,"expediente":"HCD 2024/12","municipio":"La Matanza"},
+  {"num":"24244","fecha":"2023-09-28","tipo":"infraestructura","titulo":"Infraestructura barrio José Ingenieros etapa II","monto":null,"expediente":"4074-3327/23","municipio":"La Matanza"},
+  {"num":"24195","fecha":"2022-06-20","tipo":"infraestructura","titulo":"Programa Mejoramiento de Barrios IV — adhesión convenio nacional","monto":null,"expediente":"4074-3200/22","municipio":"La Matanza"},
+  {"num":"24230","fecha":"2023-01-15","tipo":"salud","titulo":"Construcción centro médico González Catán, calle Cepeda 4368","monto":null,"expediente":"4074-5100/23","municipio":"La Matanza"},
+  {"num":"24210","fecha":"2022-11-10","tipo":"salud","titulo":"Reconocimiento deuda municipal Clínica DIRM S.A.","monto":26979,"expediente":"4074-4890/22","municipio":"La Matanza"},
+  {"num":"24251","fecha":"2023-09-28","tipo":"seguridad","titulo":"Cámaras de video inteligente en unidades de transporte público","monto":60000000,"expediente":"4074-6947/23","municipio":"La Matanza"},
+  {"num":"24248","fecha":"2023-09-28","tipo":"educacion","titulo":"Bonificación personal municipal educativo y docente","monto":null,"expediente":"4074-6269/23","municipio":"La Matanza"},
+  {"num":"24255","fecha":"2023-09-28","tipo":"tributario","titulo":"Comisión especial por deuda de CABA con La Matanza","monto":null,"expediente":"4074-7303/23","municipio":"La Matanza"}
+]
