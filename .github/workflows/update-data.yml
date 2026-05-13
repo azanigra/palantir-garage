@@ -1,0 +1,32 @@
+name: Actualizar datos SIBOM
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r scraper/requirements.txt
+
+      - name: Correr scraper
+        run: python scraper/sibom_scraper.py
+
+      - name: Commit y push datos actualizados
+        run: |
+          git config user.name "palantir-garage-bot"
+          git config user.email "bot@palantir-garage"
+          git add data/amba.json
+          git diff --staged --quiet || git commit -m "datos: actualización automática SIBOM $(date -u +%Y-%m-%d)"
+          git push
