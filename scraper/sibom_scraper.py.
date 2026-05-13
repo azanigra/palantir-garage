@@ -1,0 +1,127 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+import time
+import os
+from datetime import datetime
+
+AMBA_MUNICIPIOS = [
+    "Almirante Brown", "Avellaneda", "Berazategui", "Berisso",
+    "Ensenada", "Esteban Echeverría", "Ezeiza", "Florencio Varela",
+    "General San Martín", "Hurlingham", "Ituzaingó", "José C. Paz",
+    "La Matanza", "Lanús", "Lomas de Zamora", "Malvinas Argentinas",
+    "Merlo", "Moreno", "Morón", "Presidente Perón",
+    "Quilmes", "San Fernando", "San Isidro", "San Miguel",
+    "Tigre", "Tres de Febrero", "Vicente López"
+]
+
+SIBOM_BASE = "https://sibom.slyt.gba.gob.ar"
+SIBOM_SEARCH = f"{SIBOM_BASE}/regulations"
+
+TIPO_MAP = {
+    "Ordenanza": "ordenanza",
+    "Decreto": "decreto",
+    "Resolución": "resolucion",
+    "Licitación": "licitacion",
+    "Convenio": "convenio",
+    "Edicto": "edicto"
+}
+
+PILLAR_KEYWORDS = {
+    "salud": ["salud","hospital","sanitaria","médico","médica","vacunación","ambulancia","clínica","farmacia","enfermería"],
+    "educacion": ["educación","educativo","docente","escuela","biblioteca","universidad","enseñanza","jardín","jardines","inicial"],
+    "seguridad": ["seguridad","policial","protección","cámara","videovigilancia","emergencia","bomberos","defensa civil"],
+    "infraestructura": ["infraestructura","obra","construcción","calle","barrio","vivienda","pavimento","cloacal","agua potable","alumbrado","vial","puente","desagüe"]
+}
+
+def detect_pillar(titulo, tipo):
+    text = (titulo + " " + tipo).lower()
+    for pillar, keywords in PILLAR_KEYWORDS.items():
+        if any(k in text for k in keywords):
+            return pillar
+    return None
+
+def extract_monto(texto):
+    import re
+    patterns = [
+        r'\$\s*([\d\.,]+)',
+        r'pesos\s+([\d\.,]+)',
+        r'suma\s+de\s+\$?\s*([\d\.,]+)'
+    ]
+    for p in patterns:
+        m = re.search(p, texto.lower())
+        if m:
+            try:
+                val = m.group(1).replace(".","").replace(",",".")
+                return float(val)
+            except:
+                pass
+    return None
+
+def scrape_municipio(municipio, session, max_pages=5):
+    results = []
+    for page in range(1, max_pages + 1):
+        try:
+            params = {
+                "q[city_name_cont]": municipio,
+                "page": page
+            }
+            resp = session.get(SIBOM_SEARCH, params=params, timeout=15)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
+            rows = soup.select("table tbody tr")
+            if not rows:
+                break
+            for row in rows:
+                cols = row.find_all("td")
+                if len(cols) < 4:
+                    continue
+                try:
+                    num = cols[0].get_text(strip=True)
+                    tipo_raw = cols[1].get_text(strip=True)
+                    titulo = cols[2].get_text(strip=True)
+                    fecha = cols[3].get_text(strip=True)
+                    tipo = TIPO_MAP.get(tipo_raw, tipo_raw.lower())
+                    pillar = detect_pillar(titulo, tipo)
+                    entry = {
+                        "num": num,
+                        "fecha": fecha,
+                        "tipo": pillar if pillar else tipo,
+                        "titulo": titulo,
+                        "monto": None,
+                        "expediente": "",
+                        "municipio": municipio
+                    }
+                    results.append(entry)
+                except Exception:
+                    continue
+            time.sleep(1)
+        except Exception as e:
+            print(f"  Error pagina {page} de {municipio}: {e}")
+            break
+    return results
+
+def main():
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (compatible; PalantirGarage/1.0; datos publicos bonaerenses)"
+    })
+
+    all_data = []
+    for municipio in AMBA_MUNICIPIOS:
+        print(f"Scraping {municipio}...")
+        datos = scrape_municipio(municipio, session)
+        print(f"  {len(datos)} registros")
+        all_data.extend(datos)
+        time.sleep(2)
+
+    output_path = os.path.join(os.path.dirname(__file__), "..", "data", "amba.json")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(all_data, f, ensure_ascii=False, indent=2)
+
+    print(f"\nTotal: {len(all_data)} registros guardados en data/amba.json")
+    print(f"Actualizado: {datetime.now().isoformat()}")
+
+if __name__ == "__main__":
+    main()
